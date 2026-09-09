@@ -1,0 +1,259 @@
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales - RevenueTracker</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <span class="logo-text">RevenueTracker</span>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="/dashboard">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/products">
+                        <i class="fas fa-box"></i>
+                        <span>Products</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/sales" class="active">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Sales</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/expenses">
+                        <i class="fas fa-file-invoice"></i>
+                        <span>Expenses</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/view-records">
+                        <i class="fas fa-search"></i>
+                        <span>View Records</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/profit-loss">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Profit & Loss</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Sales</h1>
+                    <p>Record new sales and track your sales history</p>
+                </div>
+
+                <div class="user-info">
+                    <div class="user-profile">
+                        <div class="user-avatar" id="userInitials"></div>
+                        <span class="user-name" id="displayName"></span>
+                    </div>
+                    <button class="btn-logout" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
+                </div>
+            </div>
+
+            <!-- Page Content -->
+            <div class="content-wrapper">
+                <!-- Record Sale Form -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-cart-plus"></i> Record New Sale
+                    </div>
+                    <div class="card-body">
+                        <form id="saleForm">
+                            <div class="form-group">
+                                <label>Select Product</label>
+                                <select class="form-control" id="productSelect" required>
+                                    <option value="">Choose a product...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Quantity</label>
+                                <input type="number" class="form-control" id="saleQuantity" min="1" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Total Amount</label>
+                                <input type="text" class="form-control" id="totalAmount" readonly>
+                            </div>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check"></i>
+                                Record Sale
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Sales List -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-history"></i> Sales History
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table" id="salesTable">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Product</th>
+                                        <th>Quantity</th>
+                                        <th>Unit Price</th>
+                                        <th>Total Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sales-body">
+                                    <tr><td colspan="5" class="text-center">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/';
+        }
+
+        // Set user info (dashboard-style top bar)
+        const username = localStorage.getItem('username') || 'User';
+        document.getElementById('displayName').textContent = username;
+        document.getElementById('userInitials').textContent = username.charAt(0).toUpperCase();
+
+        let products = [];
+
+        async function loadProducts() {
+            try {
+                const response = await fetch('/api/products', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                products = await response.json();
+
+                const select = document.getElementById('productSelect');
+                select.innerHTML = '<option value="">Choose a product...</option>';
+
+                products.forEach(product => {
+                    if (product.quantity > 0) {
+                        select.innerHTML += `<option value="${product.id}" data-price="${product.price}" data-max="${product.quantity}">
+                            ${product.name} (Stock: ${product.quantity}) - $${parseFloat(product.price).toFixed(2)}
+                        </option>`;
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading products:', error);
+            }
+        }
+
+        document.getElementById('productSelect').addEventListener('change', calculateTotal);
+        document.getElementById('saleQuantity').addEventListener('input', calculateTotal);
+
+        function calculateTotal() {
+            const select = document.getElementById('productSelect');
+            const quantity = document.getElementById('saleQuantity').value;
+
+            if (select.value && quantity) {
+                const price = select.options[select.selectedIndex].dataset.price;
+                const total = parseFloat(price) * parseInt(quantity);
+                document.getElementById('totalAmount').value = `$${total.toFixed(2)}`;
+            } else {
+                document.getElementById('totalAmount').value = '';
+            }
+        }
+
+        async function fetchSales() {
+            try {
+                const response = await fetch('/api/sales', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const sales = await response.json();
+
+                const tbody = document.getElementById('sales-body');
+                if (sales.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center">No sales recorded yet</td></tr>';
+                } else {
+                    tbody.innerHTML = sales.map(sale => `
+                        <tr>
+                            <td>${new Date(sale.sale_date).toLocaleString()}</td>
+                            <td>${sale.product_name}</td>
+                            <td>${sale.quantity}</td>
+                            <td>$${parseFloat(sale.price).toFixed(2)}</td>
+                            <td>$${parseFloat(sale.total_amount).toFixed(2)}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error fetching sales:', error);
+            }
+        }
+
+        document.getElementById('saleForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const productId = document.getElementById('productSelect').value;
+            const quantity = document.getElementById('saleQuantity').value;
+
+            try {
+                const response = await fetch('/api/sales', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ product_id: productId, quantity })
+                });
+
+                if (response.ok) {
+                    alert('Sale recorded successfully!');
+                    document.getElementById('saleForm').reset();
+                    document.getElementById('totalAmount').value = '';
+                    loadProducts();
+                    fetchSales();
+                } else {
+                    const data = await response.json();
+                    alert(data.error || 'Error recording sale');
+                }
+            } catch (error) {
+                alert('Error recording sale');
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('username');
+            window.location.href = '/';
+        }
+
+        loadProducts();
+        fetchSales();
+    </script>
+</body>
+</html>

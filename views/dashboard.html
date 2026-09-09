@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - RevenueTracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+<div class="dashboard">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <span class="logo-text">RevenueTracker</span>
+        </div>
+
+        <ul class="sidebar-menu">
+            <li>
+                <a href="/dashboard" class="active">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="/products">
+                    <i class="fas fa-box"></i>
+                    <span>Products</span>
+                </a>
+            </li>
+            <li>
+                <a href="/sales">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Sales</span>
+                </a>
+            </li>
+            <li>
+                <a href="/expenses">
+                    <i class="fas fa-file-invoice"></i>
+                    <span>Expenses</span>
+                </a>
+            </li>
+            <li>
+                <a href="/view-records">
+                    <i class="fas fa-search"></i>
+                    <span>View Records</span>
+                </a>
+            </li>
+            <li>
+                <a href="/profit-loss">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Profit & Loss</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+
+        <!-- TOP BAR -->
+        <div class="top-bar">
+            <div class="page-title">
+                <h1>Dashboard</h1>
+                <p>Welcome back, <span id="welcomeName"></span></p>
+            </div>
+
+            <div class="user-info">
+                <div class="user-profile">
+                    <div class="user-avatar" id="userInitials"></div>
+                    <span class="user-name" id="displayName"></span>
+                </div>
+
+                <button class="btn-logout" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </div>
+
+
+        <!-- PAGE CONTENT -->
+        <div class="content-wrapper">
+
+            <!-- Welcome Section -->
+            <div class="welcome-section">
+                <div class="welcome-content">
+                    <h2>Ready to grow your business? 📈</h2>
+                    <p>
+                        Use the quick actions below to manage your products,
+                        record sales, or track expenses.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <h2 style="margin-bottom:20px;">Quick Actions</h2>
+
+            <div class="quick-actions">
+
+                <div class="action-card" onclick="window.location.href='/products'">
+                    <div class="action-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <h3>Add Products</h3>
+                    <p>Add new products in inventory.</p>
+                </div>
+
+                <div class="action-card" onclick="window.location.href='/sales'">
+                    <div class="action-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <h3>Record Sale</h3>
+                    <p>Track customer purchases easily.</p>
+                </div>
+
+                <div class="action-card" onclick="window.location.href='/expenses'">
+                    <div class="action-icon">
+                        <i class="fas fa-file-invoice"></i>
+                    </div>
+                    <h3>Add Expense</h3>
+                    <p>Keep your expense records organized.</p>
+                </div>
+
+                <div class="action-card" onclick="window.location.href='/profit-loss'">
+                    <div class="action-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>View Reports</h3>
+                    <p>Monitor profit and loss performance.</p>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/';
+    }
+
+    // Get username safely
+    const username = (localStorage.getItem('username') || 'User').trim();
+
+    // Set welcome message with comma
+    document.getElementById('welcomeName').textContent = username + '!';
+
+    // Set profile section
+    document.getElementById('displayName').textContent = username;
+    document.getElementById('userInitials').textContent = username.charAt(0).toUpperCase();
+
+
+    function logout() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+        window.location.href = '/';
+    }
+</script>
+
+</body>
+</html>

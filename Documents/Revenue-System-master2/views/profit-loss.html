@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profit & Loss - RevenueTracker</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <span class="logo-text">RevenueTracker</span>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="/dashboard">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/products">
+                        <i class="fas fa-box"></i>
+                        <span>Products</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/sales">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Sales</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/expenses">
+                        <i class="fas fa-file-invoice"></i>
+                        <span>Expenses</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/view-records">
+                        <i class="fas fa-search"></i>
+                        <span>View Records</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/profit-loss" class="active">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Profit & Loss</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Profit & Loss</h1>
+                    <p>Monitor sales, expenses, and net profit for any month</p>
+                </div>
+
+                <div class="user-info">
+                    <div class="user-profile">
+                        <div class="user-avatar" id="userInitials"></div>
+                        <span class="user-name" id="displayName"></span>
+                    </div>
+                    <button class="btn-logout" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
+                </div>
+            </div>
+
+            <!-- Page Content -->
+            <div class="content-wrapper">
+                <!-- Month Filter -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label for="monthSelect" style="margin-bottom: 10px;">Select Month</label>
+                            <select class="form-control" id="monthSelect" style="max-width: 260px;">
+                                <option value="">All Time</option>
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="profit-loss-summary">
+                    <div class="summary-card">
+                        <h4>Total Sales</h4>
+                        <div class="amount" id="totalSales">$0.00</div>
+                    </div>
+                    <div class="summary-card">
+                        <h4>Total Expenses</h4>
+                        <div class="amount" id="totalExpenses">$0.00</div>
+                    </div>
+                    <div class="summary-card" id="netProfitCard">
+                        <h4>Net Profit / Loss</h4>
+                        <div class="amount" id="netProfit">$0.00</div>
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="card">
+                    <div class="card-body text-center">
+                        <div id="statusDisplay" class="status-badge">Loading...</div>
+                    </div>
+                </div>
+
+                <!-- Detailed Breakdown -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-pie"></i> Financial Summary
+                    </div>
+                    <div class="card-body">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                            <div>
+                                <h5 style="margin-bottom: 10px;">Income</h5>
+                                <table class="table">
+                                    <tr>
+                                        <td>Total Sales Revenue</td>
+                                        <td class="text-right" id="salesRevenue">$0.00</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div>
+                                <h5 style="margin-bottom: 10px;">Expenses</h5>
+                                <table class="table">
+                                    <tr>
+                                        <td>Total Operating Expenses</td>
+                                        <td class="text-right" id="expenseTotal">$0.00</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <hr style="margin: 20px 0; border: none; border-top: 1px solid #e2e8f0;">
+
+                        <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 800;">
+                            <span>Net Result:</span>
+                            <span id="netResult">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/';
+        }
+
+        // Set user info (dashboard-style top bar)
+        const username = localStorage.getItem('username') || 'User';
+        document.getElementById('displayName').textContent = username;
+        document.getElementById('userInitials').textContent = username.charAt(0).toUpperCase();
+
+        async function fetchProfitLoss() {
+            const month = document.getElementById('monthSelect').value;
+            const url = month ? `/api/profit-loss?month=${month}` : '/api/profit-loss';
+
+            try {
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                // Update display
+                document.getElementById('totalSales').textContent = `$${data.total_sales.toFixed(2)}`;
+                document.getElementById('totalExpenses').textContent = `$${data.total_expenses.toFixed(2)}`;
+                document.getElementById('netProfit').textContent = `$${data.net_profit.toFixed(2)}`;
+                document.getElementById('salesRevenue').textContent = `$${data.total_sales.toFixed(2)}`;
+                document.getElementById('expenseTotal').textContent = `$${data.total_expenses.toFixed(2)}`;
+                document.getElementById('netResult').textContent = `$${data.net_profit.toFixed(2)}`;
+
+                // Update status
+                const statusDisplay = document.getElementById('statusDisplay');
+                statusDisplay.textContent = data.status === 'profit' ? 'PROFIT' : 'LOSS';
+                statusDisplay.className = `status-badge ${data.status}`;
+
+                // Update card class
+                const netProfitCard = document.getElementById('netProfitCard');
+                netProfitCard.className = `summary-card ${data.status}`;
+
+            } catch (error) {
+                console.error('Error fetching profit/loss:', error);
+            }
+        }
+
+        document.getElementById('monthSelect').addEventListener('change', fetchProfitLoss);
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('username');
+            window.location.href = '/';
+        }
+
+        fetchProfitLoss();
+    </script>
+</body>
+</html>

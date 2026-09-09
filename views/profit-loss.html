@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profit & Loss - RevenueTracker</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Additional styles for month filter */
+        .filter-section {
+            background: white;
+            border-radius: 25px;
+            padding: 25px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .filter-label {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .filter-label i {
+            color: var(--primary);
+            font-size: 24px;
+        }
+        
+        .filter-label span {
+            font-weight: 700;
+            color: var(--dark);
+        }
+        
+        .month-selector {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .month-selector select {
+            padding: 12px 20px;
+            border-radius: 30px;
+            border: 2px solid var(--border);
+            background: white;
+            font-size: 15px;
+            min-width: 200px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .month-selector select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+        
+        .month-selector select:hover {
+            border-color: var(--primary);
+        }
+        
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card {
+            background: white;
+            padding: 30px;
+            border-radius: 25px;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+        }
+        
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 35px -10px rgba(99, 102, 241, 0.2);
+        }
+        
+        .summary-card h4 {
+            color: var(--gray);
+            font-size: 14px;
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .summary-card .amount {
+            font-size: 32px;
+            font-weight: 800;
+        }
+        
+        .summary-card.profit .amount {
+            color: var(--success);
+        }
+        
+        .summary-card.loss .amount {
+            color: var(--danger);
+        }
+        
+        .status-card {
+            background: white;
+            border-radius: 25px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 30px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 12px 40px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 18px;
+            letter-spacing: 1px;
+        }
+        
+        .status-badge.profit {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+        }
+        
+        .status-badge.loss {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+        }
+        
+        .status-message {
+            margin-top: 10px;
+            color: var(--gray);
+            font-size: 14px;
+        }
+        
+        .details-card {
+            background: white;
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .details-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--border);
+            background: #f8fafc;
+        }
+        
+        .details-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--dark);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .details-header h3 i {
+            color: var(--primary);
+        }
+        
+        .details-body {
+            padding: 25px;
+        }
+        
+        .split-view {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 25px;
+        }
+        
+        .split-view h5 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 15px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: var(--gray);
+            font-weight: 500;
+        }
+        
+        .info-value {
+            font-weight: 700;
+        }
+        
+        .net-result {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 0 0;
+            margin-top: 20px;
+            border-top: 2px solid var(--border);
+            font-size: 20px;
+            font-weight: 800;
+        }
+        
+        .net-result .profit {
+            color: var(--success);
+        }
+        
+        .net-result .loss {
+            color: var(--danger);
+        }
+        
+        @media (max-width: 768px) {
+            .filter-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .summary-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .split-view {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .month-selector {
+                flex-direction: column;
+            }
+            
+            .month-selector select {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <span class="logo-text">RevenueTracker</span>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="/dashboard">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/products">
+                        <i class="fas fa-box"></i>
+                        <span>Products</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/sales">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Sales</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/expenses">
+                        <i class="fas fa-file-invoice"></i>
+                        <span>Expenses</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/view-records">
+                        <i class="fas fa-search"></i>
+                        <span>View Records</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/profit-loss" class="active">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Profit & Loss</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Profit & Loss Statement</h1>
+                    <p>Track your business performance over time</p>
+                </div>
+
+                <div class="user-info">
+                    <div class="user-profile">
+                        <div class="user-avatar" id="userInitials"></div>
+                        <span class="user-name" id="displayName"></span>
+                    </div>
+                    <button class="btn-logout" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
+                </div>
+            </div>
+
+            <!-- Page Content -->
+            <div class="content-wrapper">
+                <!-- Month Filter Section -->
+                <div class="filter-section">
+                    <div class="filter-label">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Filter by Period</span>
+                    </div>
+                    <div class="month-selector">
+                        <select id="monthSelect">
+                            <option value="">All Time (Full History)</option>
+                            <option value="1">January (Current Year)</option>
+                            <option value="2">February (Current Year)</option>
+                            <option value="3">March (Current Year)</option>
+                            <option value="4">April (Current Year)</option>
+                            <option value="5">May (Current Year)</option>
+                            <option value="6">June (Current Year)</option>
+                            <option value="7">July (Current Year)</option>
+                            <option value="8">August (Current Year)</option>
+                            <option value="9">September (Current Year)</option>
+                            <option value="10">October (Current Year)</option>
+                            <option value="11">November (Current Year)</option>
+                            <option value="12">December (Current Year)</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="fetchProfitLoss()">
+                            <i class="fas fa-filter"></i> Apply
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="summary-cards">
+                    <div class="summary-card">
+                        <h4>Total Sales</h4>
+                        <div class="amount" id="totalSales">$0.00</div>
+                    </div>
+                    <div class="summary-card">
+                        <h4>Total Expenses</h4>
+                        <div class="amount" id="totalExpenses">$0.00</div>
+                    </div>
+                    <div class="summary-card" id="netProfitCard">
+                        <h4>Net Profit / Loss</h4>
+                        <div class="amount" id="netProfit">$0.00</div>
+                    </div>
+                </div>
+
+                <!-- Status Card -->
+                <div class="status-card">
+                    <div id="statusDisplay" class="status-badge">Loading...</div>
+                    <div class="status-message" id="statusMessage"></div>
+                </div>
+
+                <!-- Detailed Breakdown -->
+                <div class="details-card">
+                    <div class="details-header">
+                        <h3>
+                            <i class="fas fa-chart-pie"></i>
+                            Financial Summary
+                        </h3>
+                    </div>
+                    <div class="details-body">
+                        <div class="split-view">
+                            <div>
+                                <h5>Income</h5>
+                                <div class="info-row">
+                                    <span class="info-label">Total Sales Revenue</span>
+                                    <span class="info-value" id="salesRevenue">$0.00</span>
+                                </div>
+                            </div>
+                            <div>
+                                <h5>Expenses</h5>
+                                <div class="info-row">
+                                    <span class="info-label">Total Operating Expenses</span>
+                                    <span class="info-value" id="expenseTotal">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="net-result">
+                            <span>Net Result:</span>
+                            <span id="netResult" class="">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/';
+        }
+
+        // Set user info
+        const username = localStorage.getItem('username') || 'User';
+        document.getElementById('displayName').textContent = username;
+        document.getElementById('userInitials').textContent = username.charAt(0).toUpperCase();
+
+        // Month names for display
+        const monthNames = {
+            '1': 'January', '2': 'February', '3': 'March', '4': 'April',
+            '5': 'May', '6': 'June', '7': 'July', '8': 'August',
+            '9': 'September', '10': 'October', '11': 'November', '12': 'December'
+        };
+
+        async function fetchProfitLoss() {
+            const month = document.getElementById('monthSelect').value;
+            
+            // Show loading state
+            document.getElementById('totalSales').textContent = 'Loading...';
+            document.getElementById('totalExpenses').textContent = 'Loading...';
+            document.getElementById('netProfit').textContent = 'Loading...';
+            document.getElementById('statusDisplay').textContent = 'LOADING';
+            
+            // Build URL with query parameter if month is selected
+            let url = '/api/profit-loss';
+            if (month) {
+                url += `?month=${month}`;
+            }
+
+            try {
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Format numbers as currency
+                const formatMoney = (value) => {
+                    return new Intl.NumberFormat('en-US', {
+                        style: 'currency',
+                        currency: 'USD',
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }).format(value);
+                };
+
+                // Update displays
+                document.getElementById('totalSales').textContent = formatMoney(data.total_sales);
+                document.getElementById('totalExpenses').textContent = formatMoney(data.total_expenses);
+                document.getElementById('netProfit').textContent = formatMoney(data.net_profit);
+                document.getElementById('salesRevenue').textContent = formatMoney(data.total_sales);
+                document.getElementById('expenseTotal').textContent = formatMoney(data.total_expenses);
+                
+                const netResult = document.getElementById('netResult');
+                netResult.textContent = formatMoney(data.net_profit);
+                netResult.className = data.status === 'profit' ? 'profit' : 'loss';
+
+                // Update status
+                const statusDisplay = document.getElementById('statusDisplay');
+                statusDisplay.textContent = data.status === 'profit' ? 'PROFIT' : 'LOSS';
+                statusDisplay.className = `status-badge ${data.status}`;
+
+                // Update status message
+                const statusMessage = document.getElementById('statusMessage');
+                const periodText = month ? `for ${monthNames[month]}` : '(All Time)';
+                
+                if (data.net_profit > 0) {
+                    statusMessage.textContent = `Your business is profitable ${periodText}! 🎉`;
+                } else if (data.net_profit < 0) {
+                    statusMessage.textContent = `Your business is running at a loss ${periodText}. Consider reviewing expenses.`;
+                } else {
+                    statusMessage.textContent = `Break-even ${periodText}. No profit or loss.`;
+                }
+
+                // Update card class
+                const netProfitCard = document.getElementById('netProfitCard');
+                netProfitCard.className = `summary-card ${data.status}`;
+
+            } catch (error) {
+                console.error('Error fetching profit/loss:', error);
+                
+                // Show error state
+                document.getElementById('totalSales').textContent = 'Error';
+                document.getElementById('totalExpenses').textContent = 'Error';
+                document.getElementById('netProfit').textContent = 'Error';
+                document.getElementById('statusDisplay').textContent = 'ERROR';
+                document.getElementById('statusDisplay').className = 'status-badge';
+                document.getElementById('statusMessage').textContent = 'Failed to load data. Please try again.';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('username');
+            window.location.href = '/';
+        }
+
+        // Load data on page load
+        fetchProfitLoss();
+    </script>
+</body>
+</html>
